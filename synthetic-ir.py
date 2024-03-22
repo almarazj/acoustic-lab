@@ -27,10 +27,6 @@ duration = len(rir) / fs
 
 # measured IR envelope
 
-
-
-
-
 peaks, _ = find_peaks(rir, distance=500)
 
 env_peaks = np.zeros(len(rir))
