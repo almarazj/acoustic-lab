@@ -3,11 +3,14 @@ import scipy as sp
 import matplotlib.pyplot as plt
 import os
 import soundfile as sf
+import scipy.signal as sig
 from scipy.signal import hilbert, find_peaks
 from scipy.interpolate import interp1d
 from scipy.signal import butter, lfilter, freqz
 from scipy.ndimage import interpolation
 
+
+# load rirs path
 path = os.path.abspath(os.getcwd())
 IRs= os.path.join(path,'RIRs')
 filenames = [f for f in os.listdir(IRs) if f.endswith('.wav')]
@@ -27,7 +30,7 @@ duration = len(rir) / fs
 
 # measured IR envelope
 
-peaks, _ = find_peaks(rir, distance=500)
+peaks, _ = find_peaks(rir, distance=2400)
 
 env_peaks = np.zeros(len(rir))
 env_peaks[peaks] = rir[peaks]
@@ -60,9 +63,26 @@ normalized_synthetic_ir = syntetic_ir /n
 
 # Ploteos
 plt.plot(t, rir)
-#plt.plot(t, ir_env)
+plt.plot(t, ir_env)
 plt.plot(t, normalized_synthetic_ir, alpha = 0.4)
 plt.show()
+
+# espectrograma
+
+
+
+f, t, Sxx = sig.spectrogram(rir, fs)
+rir_dB = 20*np.log10(Sxx/2e-5)
+
+f, t, synt_Sxx = sig.spectrogram(normalized_synthetic_ir, fs)
+synth_dB = 20*np.log10(synt_Sxx/2e-5)
+
+fig, (ax1, ax2) = plt.subplots(1, 2)
+ax1.pcolormesh(t, f, rir_dB, shading='gouraud')
+ax2.pcolormesh(t, f, synth_dB, shading='gouraud')
+
+plt.show()
+
 
 # exportar archivos
 
