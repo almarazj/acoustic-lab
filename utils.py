@@ -3,6 +3,7 @@ import os
 import numpy as np
 from scipy import signal
 from scipy import ndimage
+import matplotlib.pyplot as plt
 
 def load_rirs_path():
     path = os.path.abspath(os.getcwd())
@@ -32,7 +33,8 @@ def generate_synthetic_rir(rir):
     z = len(rir) / len(rir[peaks])
 
     ir_env = ndimage.interpolation.zoom(np.abs(rir)[peaks], z)
-
+    plt.plot(ir_env)
+    plt.show()
     # M = 0.0005         # background noise amplitude
     # A = 0.055           # impulse response amplitude
     # rt = 0.5           # reverberation time
@@ -42,11 +44,49 @@ def generate_synthetic_rir(rir):
 
     # gaussian noise
     noise = np.random.normal(0, 1, len(rir))
-
+    plt.plot(noise)
+    plt.show()
     # synthetic IR
     syntetic_ir = (noise * ir_env) 
     n = np.max(syntetic_ir) / np.max(rir)
     normalized_synthetic_ir = syntetic_ir / n
-    
+    plt.plot(normalized_synthetic_ir)
+    plt.show()
+
     return normalized_synthetic_ir
+
+def try_stft(rir, hop, fs):
+    SFT = signal.ShortTimeFFT(rir, hop=hop, fs=fs)
+    spec = SFT.stft(rir)
+
+    fig1, ax1 = plt.subplots(figsize=(6., 4.))  # enlarge plot a bit
+
+    t_lo, t_hi = SFT.extent(len(rir))[:2]  # time range of plot
+    ax1.set_title(rf"STFT ({SFT.m_num*SFT.T:g}$\,s$ Gaussian window, " +
+                rf"$\sigma_t={8*SFT.T}\,$s)")
+    ax1.set(xlabel=f"Time $t$ in seconds ({SFT.p_num(len(rir))} slices, " +
+                rf"$\Delta t = {SFT.delta_t:g}\,$s)",
+            ylabel=f"Freq. $f$ in Hz ({SFT.f_pts} bins, " +
+                rf"$\Delta f = {SFT.delta_f:g}\,$Hz)",
+            xlim=(t_lo, t_hi))
+
+    im1 = ax1.imshow(abs(spec), origin='lower', aspect='auto',
+                    extent=SFT.extent(len(rir)), cmap='viridis')
+    fig1.colorbar(im1, label="Magnitude $|S_x(t, f)|$")
+
+    # Shade areas where window slices stick out to the side:
+    for t0_, t1_ in [(t_lo, SFT.lower_border_end[0] * SFT.T),
+                    (SFT.upper_border_begin(len(rir))[0] * SFT.T, t_hi)]:
+        ax1.axvspan(t0_, t1_, color='w', linewidth=0, alpha=.2)
+    for t_ in [0, len(rir) * SFT.T]:  # mark signal borders with vertical line:
+        ax1.axvline(t_, color='y', linestyle='--', alpha=0.5)
+    ax1.legend()
+    fig1.tight_layout()
+    plt.show()
+
+    print(SFT.invertible)
+
+    x1 = SFT.istft(spec, k1=len(rir))
+    sf.write('audio-files/x1.wav', x1, fs)
+
 

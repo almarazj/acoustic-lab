@@ -3,7 +3,7 @@ import soundfile as sf
 import scipy.signal as sig
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-from scipy.signal import istft, medfilt
+from scipy.ndimage import median_filter
 from utils import *
 
 
@@ -11,6 +11,7 @@ from utils import *
 irs_path, filenames = load_rirs_path()
 t, rir, fs, duration = load_ir(irs_path, filenames[0])
 
+try_stft(rir, 256, fs)
 # Generate synthetic RIR
 norm_synt_ir = generate_synthetic_rir(rir)
 
@@ -27,18 +28,18 @@ f, t, rir_spec = sig.stft(rir,
                             nperseg=win_size, 
                             padded=True)
 
-rir_spec_dB = np.abs(rir_spec)
+rir_spec_dB = 20*np.log10(np.abs(rir_spec)/2e-5)
 
 _, _, synt_rir_spec = sig.stft(norm_synt_ir,
                                 fs=fs,
                                 nperseg=win_size,
                                 padded=True)
 
-synt_rir_spec_dB = np.abs(synt_rir_spec)
+synt_rir_spec_dB = 20*np.log10(np.abs(synt_rir_spec)/2e-5)
 
-frequency_response = medfilt(rir_spec_dB[:,0], 25)
+frequency_response = median_filter(np.real(rir_spec_dB)[:,0], 25, mode='reflect')
 
-spec_diff = medfilt(synt_rir_spec_dB[:,0], 25) - frequency_response
+spec_diff = median_filter(np.real(synt_rir_spec_dB)[:,0], 25, mode='reflect') - frequency_response
 
 filt_synt_rir_spec_dB = synt_rir_spec_dB
 for i in range(np.shape(synt_rir_spec_dB)[1]):
@@ -55,12 +56,11 @@ ax3.set_ylim(20,20000)
 fig.colorbar(mesh1)
 fig.colorbar(mesh2)
 fig.colorbar(mesh3)
-
-
 plt.show()
 
 
 # exportar archivos
-_, audio_signal = istft(filt_synt_rir_spec_dB, nperseg=win_size)
+_, audio_signal = sig.istft(filt_synt_rir_spec_dB, nperseg=win_size)
 
 sf.write('audio-files/synthetic_ir.wav', audio_signal, fs)
+
