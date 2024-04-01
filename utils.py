@@ -61,6 +61,48 @@ def generate_synthetic_rir(rir, fs):
 
     return normalized_synthetic_ir
 
+def low_pass(rir, fs, freq, order):
+    b, a = signal.butter(order, freq, fs=fs, btype='low', analog=False)
+    y_low = signal.lfilter(b, a, rir)
+    
+    # w, h = signal.freqz(b, a, fs=fs, worN=8000)
+    # plt.semilogx(w, np.abs(h))
+    # plt.title('Low Pass filter')
+    # plt.show()
+    return y_low
+
+def hi_pass(rir, fs, freq, order):
+    b, a = signal.butter(order, freq, fs=fs, btype='high', analog=False)
+    y_high = signal.filtfilt(b, a, rir)
+    
+    # w, h = signal.freqz(b, a, fs=fs, worN=8000)
+    # plt.semilogx(w, np.abs(h))
+    # plt.title('High Pass filter')
+    # plt.show()
+    return y_high
+
+def split_ir(rir, fs, freq, order=6):
+    det_rir = low_pass(rir, fs, freq, order)
+    stoc_rir = hi_pass(rir, fs, freq, order)
+    
+    # plt.subplot(2,1,1)
+    # plt.plot(det_rir)
+    # plt.title('Deterministic rir')
+    
+    # plt.subplot(2,1,2)
+    # plt.plot(stoc_rir)
+    # plt.title('Stochastic rir')
+    
+    # plt.show()
+    return det_rir, stoc_rir
+    
+def filter_synthetic_rir(synt_rir, fs, freq, order=6):
+    stoc_rir = hi_pass(synt_rir, fs, freq, order)
+    filtered_synthetic_rir_1 = low_pass(stoc_rir, fs, 6000, 1)
+    filtered_synthetic_rir_2 =low_pass(filtered_synthetic_rir_1, fs, 14000, order)
+    return filtered_synthetic_rir_2
+
+
 def stft(rir, hop, fs):
     SFT = signal.ShortTimeFFT(rir, hop=hop, fs=fs)
     spec = SFT.stft(rir)
