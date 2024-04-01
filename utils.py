@@ -3,7 +3,9 @@ import os
 import numpy as np
 from scipy import signal
 from scipy import ndimage
+from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
+
 
 def load_rirs_path():
     path = os.path.abspath(os.getcwd())
@@ -17,76 +19,56 @@ def load_ir(path, filename):
 
     raw_t = np.linspace(0, len(raw_rir), len(raw_rir))
 
-    t = raw_t[0:len(raw_rir)-np.argmax(np.abs(raw_rir))-1] / fs
-    rir = raw_rir[np.argmax(np.abs(raw_rir)):-1]
+    t = raw_t[0:len(raw_rir)-np.argmax(np.abs(raw_rir))-1]
+    rir = raw_rir[np.argmax(np.abs(raw_rir)):-20000]
 
     duration = len(rir) / fs
     return t, rir, fs, duration
 
-def generate_synthetic_rir(rir):
+def monoExp(x, m, t, b):
+    return m * np.exp(t * x) + b
 
-    peaks, _ = signal.find_peaks(np.abs(rir))
+def fit_exp_linear(t, y):
+    y = np.log(y)
+    K, A_log = np.polyfit(t, y, deg=1)
+    A = np.exp(A_log)
+    return A, K
 
-    env_peaks = np.zeros(len(rir))
-    env_peaks[peaks] = np.abs(rir)[peaks]
-
-    z = len(rir) / len(rir[peaks])
-
-    ir_env = ndimage.interpolation.zoom(np.abs(rir)[peaks], z)
-    plt.plot(ir_env)
-    plt.show()
-    # M = 0.0005         # background noise amplitude
-    # A = 0.055           # impulse response amplitude
-    # rt = 0.5           # reverberation time
-
-    # # decay rate
-    # b = 3 / (rt * np.log(np.e))    
+def generate_synthetic_rir(rir, fs):
+    
+    xs, _ = signal.find_peaks(np.abs(rir), distance=150)
+    ys = np.abs(rir)[xs]
+    
+    A, K = fit_exp_linear(xs, ys)
+    fit_y = monoExp(xs, A, K, 0)
 
     # gaussian noise
-    noise = np.random.normal(0, 1, len(rir))
-    plt.plot(noise)
-    plt.show()
+    noise = np.random.normal(0, 0.45, len(rir))
+    z = len(rir) / len(rir[xs])
+
+    ir_env = ndimage.interpolation.zoom(fit_y, z)
+    
     # synthetic IR
-    syntetic_ir = (noise * ir_env) 
-    n = np.max(syntetic_ir) / np.max(rir)
-    normalized_synthetic_ir = syntetic_ir / n
-    plt.plot(normalized_synthetic_ir)
-    plt.show()
+    synthetic_ir = (noise * ir_env) 
+    n = np.max(synthetic_ir) / np.max(rir)
+    normalized_synthetic_ir = synthetic_ir / n
+    #plt.plot(normalized_synthetic_ir,alpha=0.1, label='norm')
+    # plt.plot(synthetic_ir,alpha=0.4, label='synth')
+    # plt.plot(rir, label='original')
+    # plt.plot(ir_env)
+    # plt.legend()
+    # plt.show()
 
     return normalized_synthetic_ir
 
-def try_stft(rir, hop, fs):
+def stft(rir, hop, fs):
     SFT = signal.ShortTimeFFT(rir, hop=hop, fs=fs)
     spec = SFT.stft(rir)
-
-    fig1, ax1 = plt.subplots(figsize=(6., 4.))  # enlarge plot a bit
-
-    t_lo, t_hi = SFT.extent(len(rir))[:2]  # time range of plot
-    ax1.set_title(rf"STFT ({SFT.m_num*SFT.T:g}$\,s$ Gaussian window, " +
-                rf"$\sigma_t={8*SFT.T}\,$s)")
-    ax1.set(xlabel=f"Time $t$ in seconds ({SFT.p_num(len(rir))} slices, " +
-                rf"$\Delta t = {SFT.delta_t:g}\,$s)",
-            ylabel=f"Freq. $f$ in Hz ({SFT.f_pts} bins, " +
-                rf"$\Delta f = {SFT.delta_f:g}\,$Hz)",
-            xlim=(t_lo, t_hi))
-
-    im1 = ax1.imshow(abs(spec), origin='lower', aspect='auto',
-                    extent=SFT.extent(len(rir)), cmap='viridis')
-    fig1.colorbar(im1, label="Magnitude $|S_x(t, f)|$")
-
-    # Shade areas where window slices stick out to the side:
-    for t0_, t1_ in [(t_lo, SFT.lower_border_end[0] * SFT.T),
-                    (SFT.upper_border_begin(len(rir))[0] * SFT.T, t_hi)]:
-        ax1.axvspan(t0_, t1_, color='w', linewidth=0, alpha=.2)
-    for t_ in [0, len(rir) * SFT.T]:  # mark signal borders with vertical line:
-        ax1.axvline(t_, color='y', linestyle='--', alpha=0.5)
-    ax1.legend()
-    fig1.tight_layout()
-    plt.show()
-
-    print(SFT.invertible)
-
+    return spec
+    
+def istft(spec, rir, hop, fs):
+    SFT = signal.ShortTimeFFT(rir, hop=hop, fs=fs)
     x1 = SFT.istft(spec, k1=len(rir))
-    sf.write('audio-files/x1.wav', x1, fs)
+    return x1
 
 
