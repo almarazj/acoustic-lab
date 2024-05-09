@@ -65,11 +65,14 @@ def envelope(t, rt, A, M):
 
 duration = 3        # seconds
 f = 2000           # pulse density
-rt = 0.2            # reverberation time in seconds
+rt = 0.1            # reverberation time in seconds
+
+# real ir
+ir, _ = sf.read('ir.wav')
 
 # Read anechoic audio files
 audio_data = read_audio_files()
-audio = audio_data[2]
+audio = audio_data[0]
 # for audio in audio_data:
 data = audio[0]
 fs = audio[1]
@@ -83,6 +86,8 @@ audio_vn = sig.convolve(data, v_rir)
 norm_audio_vn = audio_vn * (np.max(data)/np.max(audio_vn))
 audio_gn = sig.convolve(data, g_rir)
 norm_audio_gn = audio_gn * (np.max(data)/np.max(audio_gn))
+audio_ir = sig.convolve(data, ir)
+norm_audio_ir = audio_ir * (np.max(data)/np.max(audio_ir))
 
 
 plt.subplot(2,2,1)
@@ -105,9 +110,9 @@ plt.plot(norm_audio_gn)
 plt.xlabel('time [s]')
 plt.ylabel('amplitude')
 
-plt.show()
 sf.write('velvet.wav', v_rir, fs)
 sf.write('gaussian.wav', g_rir, fs)
 
 sf.write('drums velvet.wav', norm_audio_vn, fs)
 sf.write('drums gaussian.wav', norm_audio_gn, fs)
+sf.write('drums ir.wav', norm_audio_ir, fs)
