@@ -42,7 +42,6 @@ def velvetNoise(duration, fs, f, ensureLast):
         if p_idx <= N:                                      # make sure the last pulse is in bounds (in case nP was fractional)
             Y[p_idx+1] = 2 * round(np.random.rand()) - 1    # value of pulse: 1 or -1
                                                             # p_idx+1: bump from 0- to 1-based indexing
-        
         elif ensureLast == 1:
             p_idx = round((m*T) + np.random.rand()*(T-1-N%T))
             Y[p_idx+1] = 2 * round(np.random.rand()) - 1 
@@ -64,15 +63,15 @@ def envelope(t, rt, A, M):
 #     convolved_audio = np.convolve(data, rir)
 
 duration = 3        # seconds
-f = 2000           # pulse density
-rt = 0.1            # reverberation time in seconds
+f = 4800           # pulse density
+rt = 1.5            # reverberation time in seconds
 
 # real ir
 ir, _ = sf.read('ir.wav')
 
 # Read anechoic audio files
 audio_data = read_audio_files()
-audio = audio_data[0]
+audio = audio_data[1]
 # for audio in audio_data:
 data = audio[0]
 fs = audio[1]
@@ -90,28 +89,32 @@ audio_ir = sig.convolve(data, ir)
 norm_audio_ir = audio_ir * (np.max(data)/np.max(audio_ir))
 
 
-plt.subplot(2,2,1)
-plt.plot(t, v_rir)
+plt.subplot(2,1,1)
+plt.plot(t, vnoise, 'k')
+plt.xlim(0,0.2)
 plt.xlabel('time [s]')
 plt.ylabel('amplitude')
 
-plt.subplot(2,2,2)
-plt.plot(t, g_rir)
+plt.subplot(2,1,2)
+plt.plot(t, gnoise, 'k')
+plt.xlim(0,0.2)
 plt.xlabel('time [s]')
 plt.ylabel('amplitude')
 
-plt.subplot(2,2,3)
-plt.plot(norm_audio_vn)
-plt.xlabel('time [s]')
-plt.ylabel('amplitude')
+# plt.subplot(2,2,3)
+# plt.plot(norm_audio_vn)
+# plt.xlabel('time [s]')
+# plt.ylabel('amplitude')
 
-plt.subplot(2,2,4)
-plt.plot(norm_audio_gn)
-plt.xlabel('time [s]')
-plt.ylabel('amplitude')
+# plt.subplot(2,2,4)
+# plt.plot(norm_audio_gn)
+# plt.xlabel('time [s]')
+# plt.ylabel('amplitude')
 
-sf.write('velvet.wav', v_rir, fs)
-sf.write('gaussian.wav', g_rir, fs)
+plt.show()
+
+sf.write('velvet.wav', vnoise, fs)
+sf.write('gaussian.wav', gnoise, fs)
 
 sf.write('drums velvet.wav', norm_audio_vn, fs)
 sf.write('drums gaussian.wav', norm_audio_gn, fs)
