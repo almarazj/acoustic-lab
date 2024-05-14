@@ -14,11 +14,12 @@ def read_audio_files():
     audio_data = []
     for file in filenames:
         file_path = os.path.join(audio_path, file)
-        data, fs = sf.read(file_path)
+        if os.path.isfile(file_path) == True:
+            data, fs = sf.read(file_path)
         audio_data.append((data, fs))
     return audio_data
 
-def velvetNoise(duration, fs, f, ensureLast):
+def velvetNoise(duration, fs, f, ensureLast, amplitude):
     # velvet(N, f, Fs)
     # INPUT
     #     N : size of signal to generate
@@ -36,23 +37,37 @@ def velvetNoise(duration, fs, f, ensureLast):
     T = fs/f        # pulse period
     nP = int(np.ceil(N/T))  # number of pulses to generate
     Y = np.zeros(N) # output signal
-    
+    Y[0] = 50
     # calc pulse location (Välimäki, et al, Eq. 2 & 3)
     for m in range(nP-1):                                 # m needs to start at 0
         p_idx = round((m*T) + np.random.rand()*(T-1))       # k_m, location of pulse within this pulse period
         if p_idx <= N:                                      # make sure the last pulse is in bounds (in case nP was fractional)
-            Y[p_idx+1] = 2 * round(np.random.rand()) - 1    # value of pulse: 1 or -1
+            Y[p_idx+1] = (2 * round(np.random.rand()) - 1) * amplitude    # value of pulse: 1 or -1
                                                             # p_idx+1: bump from 0- to 1-based indexing
         elif ensureLast == 1:
             p_idx = round((m*T) + np.random.rand()*(T-1-N%T))
-            Y[p_idx+1] = 2 * round(np.random.rand()) - 1 
+            Y[p_idx+1] = round(np.random.rand()) - 1 
             print('forcing last pulse within bounds')
         
     return Y
 
+def expVelvetNoise(duration, fs, initial_interval, decay_rate):
+    t = np.arange(0, duration, 1/fs)
+    signal = np.zeros_like(t)
+    signal[0] = 10
+    current_time = 0
+    while current_time < duration:
+        index = int(current_time * fs + np.random.rand() * initial_interval * fs  * np.exp(-decay_rate * current_time))
+        if index < len(signal):
+            signal[index] = 2 * round(np.random.rand()) - 1
+        current_time += initial_interval * np.exp(-decay_rate * current_time)
+    
+    return signal
+
 def gaussianNoise(duration, fs):
-    noise = np.random.normal(0, 0.3, int(duration * fs))
-    return noise
+    Y = np.random.normal(0, 0.15, int(duration * fs))
+    Y[0] = 50
+    return Y
 
 def envelope(t, rt, A, M):
     b = 3 / (rt*np.log(np.e))
@@ -80,21 +95,23 @@ def suavizado(F,AMP,OCT):
                 ampsmooth[n]=10*np.log10(sum(temp)/(idxsup+n-idxinf))
     return ampsmooth
 
-duration = 3        # seconds
-f = 500       # pulse density
-rt = 0.2            # reverberation time in seconds
+duration = 3 # seconds
+amp_correction = 7 
+f = 20       # pulse density
+rt = 1            # reverberation time in seconds
 
 # real ir
 ir, _ = sf.read('audio-files/ir.wav')
 
 # Read anechoic audio files
 audio_data = read_audio_files()
-(data, fs) = audio_data[3]
+(data, fs) = audio_data[1]
 
 t = np.arange(0, duration, 1/fs)
-vnoise = velvetNoise(duration, fs, f, 1)
+vnoise = velvetNoise(duration, fs, f, 1, amp_correction)
 gnoise = gaussianNoise(duration, fs)
-env = envelope(t, rt, 1, 0.0001)
+#exp_vnoise = expVelvetNoise(duration, fs, 0.1, 2)
+env = envelope(t, rt, 1, 0.00001)
 
 v_rir = vnoise * env
 g_rir = gnoise * env
@@ -114,13 +131,14 @@ freq = np.arange(0, len(vX), 1)
 vpower_3 = suavizado(freq[20:20000], vX[20:20000], 3)
 gpower_3 = suavizado(freq[20:20000], gX[20:20000], 3)
 
-# plt.subplot(2,1,1)
-# plt.semilogx(vpower_3, 'k')
-# plt.ylim(0, 50)
-# plt.xlim(20,16000)
-# plt.xlabel('frequency [Hz]')
-# plt.ylabel('Level [dB]')
 
+plt.semilogx(vpower_3, 'k')
+plt.semilogx(gpower_3, 'r')
+plt.ylim(0, 50)
+plt.xlim(20,16000)
+plt.xlabel('frequency [Hz]')
+plt.ylabel('Level [dB]')
+plt.show()
 # plt.subplot(2,1,2)
 # plt.semilogx(gpower_3, 'k')
 # plt.ylim(0, 50)
@@ -128,19 +146,22 @@ gpower_3 = suavizado(freq[20:20000], gX[20:20000], 3)
 # plt.xlabel('frequency [Hz]')
 # plt.ylabel('Level [dB]')
 
-plt.subplot(2,1,1)
-plt.plot(t, v_rir, 'k', label='Velvet noise (2000 p/s)')
-plt.ylabel('Amplitude')
-plt.xticks([])
-plt.legend()
-plt.subplot(2,1,2)
-plt.plot(t, g_rir, 'k', label='White noise')
-plt.xlabel('Time [s]')
-plt.ylabel('Amplitude')
-plt.legend()
+# plt.subplot(2,1,2)
+# plt.plot(t, v_rir, 'k', label='Velvet noise (2000 p/s)')
+# plt.ylabel('Amplitude')
+# plt.xticks([])
+# plt.legend()
+# plt.subplot(2,1,2)
+# plt.plot(t, g_rir, 'k', label='White noise')
+# plt.xlabel('Time [s]')
+# plt.ylabel('Amplitude')
+# plt.legend()
+# plt.show()
 
 
-sf.write('audio-files/v500-noise.wav', vnoise, fs)
-sf.write('audio-files/v500-vocal.wav', norm_audio_vn, fs)
-sf.write('audio-files/g-vocal.wav', norm_audio_gn, fs)
-sf.write('audio-files/ir-vocal.wav', norm_audio_ir, fs)
+
+
+#sf.write('audio-files/v90-noise.wav', vnoise, fs)3
+#sf.write('audio-files/v90-drums.wav', norm_audio_vn, fs)
+#sf.write('audio-files/gaussian-noise.wav', gnoise, fs)
+sf.write('audio-files/v5-drums.wav', norm_audio_vn, fs)
