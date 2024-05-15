@@ -95,17 +95,17 @@ def suavizado(F,AMP,OCT):
                 ampsmooth[n]=10*np.log10(sum(temp)/(idxsup+n-idxinf))
     return ampsmooth
 
-duration = 3 # seconds
-amp_correction = 7 
-f = 20       # pulse density
-rt = 1            # reverberation time in seconds
+duration = 3        # seconds
+amp_correction = 3.8
+f = 70              # pulse density
+rt = 1              # reverberation time in seconds
 
 # real ir
 ir, _ = sf.read('audio-files/ir.wav')
 
 # Read anechoic audio files
 audio_data = read_audio_files()
-(data, fs) = audio_data[1]
+(data, fs) = audio_data[3]
 
 t = np.arange(0, duration, 1/fs)
 vnoise = velvetNoise(duration, fs, f, 1, amp_correction)
@@ -164,4 +164,4 @@ plt.show()
 #sf.write('audio-files/v90-noise.wav', vnoise, fs)3
 #sf.write('audio-files/v90-drums.wav', norm_audio_vn, fs)
 #sf.write('audio-files/gaussian-noise.wav', gnoise, fs)
-sf.write('audio-files/v5-drums.wav', norm_audio_vn, fs)
+sf.write('audio-files/v70-vocal.wav', norm_audio_vn, fs)
