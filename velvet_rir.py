@@ -65,7 +65,7 @@ def expVelvetNoise(duration, fs, initial_interval, decay_rate):
     return signal
 
 def gaussianNoise(duration, fs):
-    Y = np.random.normal(0, 0.15, int(duration * fs))
+    Y = np.random.normal(0, 0.3, int(duration * fs))
     Y[0] = 50
     return Y
 
@@ -110,7 +110,6 @@ audio_data = read_audio_files()
 t = np.arange(0, duration, 1/fs)
 vnoise = velvetNoise(duration, fs, f, 1, amp_correction)
 gnoise = gaussianNoise(duration, fs)
-#exp_vnoise = expVelvetNoise(duration, fs, 0.1, 2)
 env = envelope(t, rt, 1, 0.00001)
 
 v_rir = vnoise * env
@@ -146,8 +145,8 @@ plt.show()
 # plt.xlabel('frequency [Hz]')
 # plt.ylabel('Level [dB]')
 
-# plt.subplot(2,1,2)
-# plt.plot(t, v_rir, 'k', label='Velvet noise (2000 p/s)')
+# plt.subplot(2,1,1)
+# plt.plot(t, v_rir, 'k', label='Velvet noise (100 p/s)')
 # plt.ylabel('Amplitude')
 # plt.xticks([])
 # plt.legend()
@@ -162,6 +161,6 @@ plt.show()
 
 
 #sf.write('audio-files/v90-noise.wav', vnoise, fs)3
-#sf.write('audio-files/v90-drums.wav', norm_audio_vn, fs)
+sf.write('audio-files/v110-drums.wav', norm_audio_vn, fs)
 #sf.write('audio-files/gaussian-noise.wav', gnoise, fs)
 sf.write('audio-files/v70-vocal.wav', norm_audio_vn, fs)
