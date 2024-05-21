@@ -95,17 +95,14 @@ def suavizado(F,AMP,OCT):
                 ampsmooth[n]=10*np.log10(sum(temp)/(idxsup+n-idxinf))
     return ampsmooth
 
-duration = 3        # seconds
-amp_correction = 3.8
-f = 70              # pulse density
-rt = 1              # reverberation time in seconds
-
-# real ir
-ir, _ = sf.read('audio-files/ir.wav')
+duration = 2        # seconds
+amp_correction = 3.55
+f = 350              # pulse density
+rt = 0.5              # reverberation time in seconds
 
 # Read anechoic audio files
 audio_data = read_audio_files()
-(data, fs) = audio_data[3]
+(data, fs) = audio_data[1]
 
 t = np.arange(0, duration, 1/fs)
 vnoise = velvetNoise(duration, fs, f, 1, amp_correction)
@@ -119,8 +116,6 @@ audio_vn = sig.convolve(data, v_rir)
 norm_audio_vn = audio_vn * (np.max(data)/np.max(audio_vn))
 audio_gn = sig.convolve(data, g_rir)
 norm_audio_gn = audio_gn * (np.max(data)/np.max(audio_gn))
-audio_ir = sig.convolve(data, ir)
-norm_audio_ir = audio_ir * (np.max(data)/np.max(audio_ir))
 
 vA = np.fft.fft(vnoise)
 gA = np.fft.fft(gnoise)
@@ -161,6 +156,6 @@ plt.show()
 
 
 #sf.write('audio-files/v90-noise.wav', vnoise, fs)3
-sf.write('audio-files/v110-drums.wav', norm_audio_vn, fs)
+#sf.write('audio-files/drums/v350_1s_drums.wav', norm_audio_vn, fs)
 #sf.write('audio-files/gaussian-noise.wav', gnoise, fs)
-sf.write('audio-files/v70-vocal.wav', norm_audio_vn, fs)
+sf.write('audio-files/drums/g_1s_rir.wav', norm_audio_gn, fs)
