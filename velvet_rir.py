@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import soundfile as sf
 import os
 import scipy.signal as sig
-
+import pyloudnorm as pyln
 
 # Functions
 
@@ -19,7 +19,7 @@ def read_audio_files():
         audio_data.append((data, fs))
     return audio_data
 
-def velvetNoise(duration, fs, f, ensureLast, amplitude):
+def velvetNoise(duration, fs, f, ensureLast):
     # velvet(N, f, Fs)
     # INPUT
     #     N : size of signal to generate
@@ -37,18 +37,18 @@ def velvetNoise(duration, fs, f, ensureLast, amplitude):
     T = fs/f        # pulse period
     nP = int(np.ceil(N/T))  # number of pulses to generate
     Y = np.zeros(N) # output signal
-    Y[0] = 50
     # calc pulse location (Välimäki, et al, Eq. 2 & 3)
     for m in range(nP-1):                                 # m needs to start at 0
         p_idx = round((m*T) + np.random.rand()*(T-1))       # k_m, location of pulse within this pulse period
         if p_idx <= N:                                      # make sure the last pulse is in bounds (in case nP was fractional)
-            Y[p_idx+1] = (2 * round(np.random.rand()) - 1) * amplitude    # value of pulse: 1 or -1
+            Y[p_idx+1] = (2 * round(np.random.rand()) - 1)    # value of pulse: 1 or -1
                                                             # p_idx+1: bump from 0- to 1-based indexing
         elif ensureLast == 1:
             p_idx = round((m*T) + np.random.rand()*(T-1-N%T))
             Y[p_idx+1] = round(np.random.rand()) - 1 
             print('forcing last pulse within bounds')
-        
+    Y = normalize(Y, fs, -12)   
+    Y[0] = 50 
     return Y
 
 def expVelvetNoise(duration, fs, initial_interval, decay_rate):
@@ -66,6 +66,7 @@ def expVelvetNoise(duration, fs, initial_interval, decay_rate):
 
 def gaussianNoise(duration, fs):
     Y = np.random.normal(0, 0.3, int(duration * fs))
+    Y = normalize(Y, fs, -12)
     Y[0] = 50
     return Y
 
@@ -95,67 +96,70 @@ def suavizado(F,AMP,OCT):
                 ampsmooth[n]=10*np.log10(sum(temp)/(idxsup+n-idxinf))
     return ampsmooth
 
-duration = 2        # seconds
-amp_correction = 3.55
-f = 350              # pulse density
-rt = 0.5              # reverberation time in seconds
+def normalize(data, fs, LUFS):
+    meter = pyln.Meter(fs)
+    loudness = meter.integrated_loudness(data)
+    loudness_normalized_audio = pyln.normalize.loudness(data, loudness, LUFS)
+    return loudness_normalized_audio
 
-# Read anechoic audio files
+def plotSpectrum(data1, data2):
+    vA = np.fft.fft(data1)
+    gA = np.fft.fft(data2)
+    vX = 20*np.log10(np.abs(vA))
+    gX = 20*np.log10(np.abs(gA))
+    freq = np.arange(0, len(vX), 1)
+    vpower_3 = suavizado(freq[20:20000], vX[20:20000], 3)
+    gpower_3 = suavizado(freq[20:20000], gX[20:20000], 3)
+
+    plt.semilogx(vpower_3, 'k')
+    plt.semilogx(gpower_3, 'r')
+    plt.ylim(0, 50)
+    plt.xlim(20,16000)
+    plt.xlabel('frequency [Hz]')
+    plt.ylabel('Level [dB]')
+    plt.show()
+    # plt.subplot(2,1,2)
+    # plt.semilogx(gpower_3, 'k')
+    # plt.ylim(0, 50)
+    # plt.xlim(20,16000)
+    # plt.xlabel('frequency [Hz]')
+    # plt.ylabel('Level [dB]')
+
+    # plt.subplot(2,1,1)
+    # plt.plot(t, v_rir, 'k', label='Velvet noise (100 p/s)')
+    # plt.ylabel('Amplitude')
+    # plt.xticks([])
+    # plt.legend()
+    # plt.subplot(2,1,2)
+    # plt.plot(t, g_rir, 'k', label='White noise')
+    # plt.xlabel('Time [s]')
+    # plt.ylabel('Amplitude')
+    # plt.legend()
+    # plt.show()
+    
+duration = 2                    # seconds
+rt = 1                          # reverberation time in seconds
+f = np.arange(50,350+1,50)      # pulse density array
+
+# Read anechoic audio file
 audio_data = read_audio_files()
-(data, fs) = audio_data[1]
+(data, fs) = audio_data[0]
 
 t = np.arange(0, duration, 1/fs)
-vnoise = velvetNoise(duration, fs, f, 1, amp_correction)
-gnoise = gaussianNoise(duration, fs)
 env = envelope(t, rt, 1, 0.00001)
 
-v_rir = vnoise * env
+# Gaussian noise generation and convolution with anechoic audio file
+gnoise = gaussianNoise(duration, fs)
 g_rir = gnoise * env
-
-audio_vn = sig.convolve(data, v_rir)
-norm_audio_vn = audio_vn * (np.max(data)/np.max(audio_vn))
 audio_gn = sig.convolve(data, g_rir)
-norm_audio_gn = audio_gn * (np.max(data)/np.max(audio_gn))
+norm_audio_gn = normalize(audio_gn, fs, -12)
+sf.write('audio-files/drums/new_g_drums.wav', norm_audio_gn, fs)
 
-vA = np.fft.fft(vnoise)
-gA = np.fft.fft(gnoise)
-vX = 20*np.log10(np.abs(vA))
-gX = 20*np.log10(np.abs(gA))
-freq = np.arange(0, len(vX), 1)
-vpower_3 = suavizado(freq[20:20000], vX[20:20000], 3)
-gpower_3 = suavizado(freq[20:20000], gX[20:20000], 3)
+# Velvet noise generation and convolution with anechoic audio file
+for pulse_density in f: 
+    vnoise = velvetNoise(duration, fs, pulse_density, 1)
+    v_rir = vnoise * env
+    audio_vn = sig.convolve(data, v_rir)
+    norm_audio_vn = normalize(audio_vn, fs, -12)
+    sf.write('audio-files/drums/new_v%s_drums.wav' % (pulse_density), norm_audio_vn, fs)
 
-
-plt.semilogx(vpower_3, 'k')
-plt.semilogx(gpower_3, 'r')
-plt.ylim(0, 50)
-plt.xlim(20,16000)
-plt.xlabel('frequency [Hz]')
-plt.ylabel('Level [dB]')
-plt.show()
-# plt.subplot(2,1,2)
-# plt.semilogx(gpower_3, 'k')
-# plt.ylim(0, 50)
-# plt.xlim(20,16000)
-# plt.xlabel('frequency [Hz]')
-# plt.ylabel('Level [dB]')
-
-# plt.subplot(2,1,1)
-# plt.plot(t, v_rir, 'k', label='Velvet noise (100 p/s)')
-# plt.ylabel('Amplitude')
-# plt.xticks([])
-# plt.legend()
-# plt.subplot(2,1,2)
-# plt.plot(t, g_rir, 'k', label='White noise')
-# plt.xlabel('Time [s]')
-# plt.ylabel('Amplitude')
-# plt.legend()
-# plt.show()
-
-
-
-
-#sf.write('audio-files/v90-noise.wav', vnoise, fs)3
-#sf.write('audio-files/drums/v350_1s_drums.wav', norm_audio_vn, fs)
-#sf.write('audio-files/gaussian-noise.wav', gnoise, fs)
-sf.write('audio-files/drums/g_1s_rir.wav', norm_audio_gn, fs)
