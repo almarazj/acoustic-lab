@@ -139,12 +139,12 @@ def plotSpectrum(data1, data2):
     
 duration = 2                    # seconds
 rt = 1                          # reverberation time in seconds
-f = np.arange(50,350+1,50)      # pulse density array
+f = np.arange(1,10+1,1)      # pulse density array
 norm_level = -18                # Loudness Units relative to Full Scale
 
 # Read anechoic audio file
 audio_data = read_audio_files()
-(data, fs) = audio_data[0]
+(data, fs) = audio_data[2]
 
 t = np.arange(0, duration, 1/fs)
 env = envelope(t, rt, 1, 0.00001)
@@ -154,7 +154,7 @@ gnoise = gaussianNoise(duration, fs)
 g_rir = gnoise * env
 audio_gn = sig.convolve(data, g_rir)
 norm_audio_gn = normalize(audio_gn, fs, norm_level)
-sf.write('audio-files/drums/new_g_drums.wav', norm_audio_gn, fs)
+sf.write('audio-files/flute/new_g_flute.wav', norm_audio_gn, fs)
 
 # Velvet noise generation and convolution with anechoic audio file
 for pulse_density in f: 
@@ -162,5 +162,5 @@ for pulse_density in f:
     v_rir = vnoise * env
     audio_vn = sig.convolve(data, v_rir)
     norm_audio_vn = normalize(audio_vn, fs, norm_level)
-    sf.write('audio-files/drums/new_v%s_drums.wav' % (pulse_density), norm_audio_vn, fs)
+    sf.write('audio-files/flute/new_v%s_flute.wav' % (pulse_density), norm_audio_vn, fs)
 
