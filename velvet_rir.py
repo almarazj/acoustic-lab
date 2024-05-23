@@ -47,7 +47,7 @@ def velvetNoise(duration, fs, f, ensureLast):
             p_idx = round((m*T) + np.random.rand()*(T-1-N%T))
             Y[p_idx+1] = round(np.random.rand()) - 1 
             print('forcing last pulse within bounds')
-    Y = normalize(Y, fs, -12)   
+    Y = normalize(Y, fs, norm_level)   
     Y[0] = 50 
     return Y
 
@@ -66,7 +66,7 @@ def expVelvetNoise(duration, fs, initial_interval, decay_rate):
 
 def gaussianNoise(duration, fs):
     Y = np.random.normal(0, 0.3, int(duration * fs))
-    Y = normalize(Y, fs, -12)
+    Y = normalize(Y, fs, norm_level)
     Y[0] = 50
     return Y
 
@@ -140,6 +140,7 @@ def plotSpectrum(data1, data2):
 duration = 2                    # seconds
 rt = 1                          # reverberation time in seconds
 f = np.arange(50,350+1,50)      # pulse density array
+norm_level = -18                # Loudness Units relative to Full Scale
 
 # Read anechoic audio file
 audio_data = read_audio_files()
@@ -152,7 +153,7 @@ env = envelope(t, rt, 1, 0.00001)
 gnoise = gaussianNoise(duration, fs)
 g_rir = gnoise * env
 audio_gn = sig.convolve(data, g_rir)
-norm_audio_gn = normalize(audio_gn, fs, -12)
+norm_audio_gn = normalize(audio_gn, fs, norm_level)
 sf.write('audio-files/drums/new_g_drums.wav', norm_audio_gn, fs)
 
 # Velvet noise generation and convolution with anechoic audio file
@@ -160,6 +161,6 @@ for pulse_density in f:
     vnoise = velvetNoise(duration, fs, pulse_density, 1)
     v_rir = vnoise * env
     audio_vn = sig.convolve(data, v_rir)
-    norm_audio_vn = normalize(audio_vn, fs, -12)
+    norm_audio_vn = normalize(audio_vn, fs, norm_level)
     sf.write('audio-files/drums/new_v%s_drums.wav' % (pulse_density), norm_audio_vn, fs)
 
