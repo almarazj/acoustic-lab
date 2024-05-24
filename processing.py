@@ -139,12 +139,12 @@ def plotSpectrum(data1, data2):
     
 duration = 2                    # seconds
 rt = 1                          # reverberation time in seconds
-f = np.arange(1,10+1,1)      # pulse density array
+f = np.arange(1,20+1,1)         # pulse density array
 norm_level = -18                # Loudness Units relative to Full Scale
 
 # Read anechoic audio file
 audio_data = read_audio_files()
-(data, fs) = audio_data[2]
+(data, fs) = audio_data[0]
 
 t = np.arange(0, duration, 1/fs)
 env = envelope(t, rt, 1, 0.00001)
@@ -164,3 +164,10 @@ for pulse_density in f:
     norm_audio_vn = normalize(audio_vn, fs, norm_level)
     sf.write('audio-files/flute/new_v%s_flute.wav' % (pulse_density), norm_audio_vn, fs)
 
+fig, axs = plt.subplots(3, 2)
+axs[0, 0].plot(t, env, 'k')
+axs[0, 1].plot(t[1:], vnoise[1:], 'k')
+axs[1, 0].plot(v_rir[1:], 'k')
+axs[1, 1].plot(data[0:100000], 'k')
+axs[2, 0].plot(norm_audio_gn[0:100000], 'k')
+plt.show()
