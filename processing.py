@@ -173,7 +173,7 @@ def DRR(rir, fs, direct_length):
 duration = 2                    # seconds
 rt = 1                          # reverberation time in seconds
 f = np.arange(50, 350+1, 50)         # pulse density array
-#pulse_density = 20
+#pulse_density = 50
 norm_level = -18                # Loudness Units relative to Full Scale
 direct_length = 9              # ms
 # Read anechoic audio file
@@ -192,7 +192,7 @@ direct_to_reverb = DRR(g_rir, fs, direct_length)
 print('The direct to reverberant ratio is :', direct_to_reverb, 'dB (GWN)')
 audio_gn = sig.convolve(data, g_rir)
 norm_audio_gn = normalize(audio_gn, fs, norm_level)
-sf.write('audio-files/drums/new_g_drums.wav', norm_audio_gn, fs)
+#sf.write('audio-files/flute/new_g_flute.wav', norm_audio_gn, fs)
 
 # Velvet noise generation and convolution with anechoic audio file
 for pulse_density in f: 
@@ -204,15 +204,15 @@ for pulse_density in f:
     print('The direct to reverberant ratio is :', direct_to_reverb, 'dB (OVN)')
     audio_vn = sig.convolve(data, v_rir)
     norm_audio_vn = normalize(audio_vn, fs, norm_level)
-    sf.write('audio-files/drums/new_v%s_drums.wav' % (pulse_density), norm_audio_vn, fs)
+    #sf.write('audio-files/flute/new_v%s_flute.wav' % (pulse_density), norm_audio_vn, fs)
 
 fig, axs = plt.subplots(3, 2)
-axs[0, 0].plot(t, env, 'k')
-axs[0, 1].plot(t, gnoise, 'k')
+axs[0, 0].plot(t, gnoise, 'k')
+axs[0, 1].plot(t, vnoise, 'k')
 axs[1, 0].plot(g_rir, 'k')
-axs[1, 1].plot(data[0:100000], 'k')
+axs[1, 0].set_ylim(-0.5,1)
+axs[1, 1].plot(v_rir, 'k')
+axs[1, 1].set_ylim(-5,10)
 axs[2, 0].plot(norm_audio_gn[0:100000], 'k')
+axs[2, 1].plot(norm_audio_vn[0:100000], 'k')
 plt.show()
-
-
-
