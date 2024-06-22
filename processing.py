@@ -21,7 +21,7 @@ def read_audio_files():
         if os.path.isfile(file_path) == True:
             data, fs = sf.read(file_path)
         audio_data.append((data, fs))
-    return audio_data
+    return audio_data, filenames
 
 def velvetNoise(duration, fs, f, ensureLast):
     # velvet(N, f, Fs)
@@ -172,13 +172,17 @@ def DRR(rir, fs, direct_length):
 
 duration = 2                    # seconds
 rt = 1                          # reverberation time in seconds
-f = np.arange(50, 350+1, 50)         # pulse density array
-#pulse_density = 50
+#f = np.arange(50, 350+1, 50)         # pulse density array
+f = np.arange(10, 70+1, 10)
+#f = np.arange(1, 13+1, 2)
+#pulse_density = 20
 norm_level = -18                # Loudness Units relative to Full Scale
 direct_length = 9              # ms
 # Read anechoic audio file
-audio_data = read_audio_files()
-(data, fs) = audio_data[0]
+audio_data, filenames = read_audio_files()
+
+(data, fs) = audio_data[1]
+stimuli = 'vocal'
 
 t = np.arange(0, duration, 1/fs)
 env = envelope(t, rt, 1, 0.00001)
@@ -192,27 +196,46 @@ direct_to_reverb = DRR(g_rir, fs, direct_length)
 print('The direct to reverberant ratio is :', direct_to_reverb, 'dB (GWN)')
 audio_gn = sig.convolve(data, g_rir)
 norm_audio_gn = normalize(audio_gn, fs, norm_level)
-#sf.write('audio-files/flute/new_g_flute.wav', norm_audio_gn, fs)
+#sf.write('audio-files/%s/gwn_%s.wav' % (stimuli, stimuli), norm_audio_gn, fs)
 
 # Velvet noise generation and convolution with anechoic audio file
-for pulse_density in f: 
+i = 0
+v_rir_plot = []
+for pulse_density in f:
+     
     vnoise = velvetNoise(duration, fs, pulse_density, 1)
     v_rir = vnoise * env
+
+    v_rir_plot.append(v_rir[1:])
+
     v_rir[1:int(fs*direct_length/1000)] = 0
     v_rir[0] = 24
     direct_to_reverb = DRR(v_rir, fs, direct_length)
     print('The direct to reverberant ratio is :', direct_to_reverb, 'dB (OVN)')
     audio_vn = sig.convolve(data, v_rir)
     norm_audio_vn = normalize(audio_vn, fs, norm_level)
-    #sf.write('audio-files/flute/new_v%s_flute.wav' % (pulse_density), norm_audio_vn, fs)
+    sf.write('audio-files/%s/v_rir%s.wav' % (stimuli, pulse_density), v_rir[1:], fs)
 
 fig, axs = plt.subplots(3, 2)
-axs[0, 0].plot(t, gnoise, 'k')
-axs[0, 1].plot(t, vnoise, 'k')
-axs[1, 0].plot(g_rir, 'k')
-axs[1, 0].set_ylim(-0.5,1)
-axs[1, 1].plot(v_rir, 'k')
-axs[1, 1].set_ylim(-5,10)
-axs[2, 0].plot(norm_audio_gn[0:100000], 'k')
-axs[2, 1].plot(norm_audio_vn[0:100000], 'k')
+axs[0, 0].plot(t[1:], v_rir_plot[0], 'k', label='10 p/s')
+axs[0, 0].legend()
+axs[0, 0].set_xlabel('time [s]')
+axs[0, 1].plot(t[1:], v_rir_plot[1], 'k', label='20 p/s')
+axs[0, 1].legend()
+axs[0, 1].set_xlabel('time [s]')
+axs[1, 0].plot(t[1:], v_rir_plot[2], 'k', label='30 p/s')
+axs[1, 0].legend()
+axs[1, 0].set_xlabel('time [s]')
+#axs[1, 0].set_ylim(-0.5,1)
+axs[1, 1].plot(t[1:], v_rir_plot[3], 'k', label='40 p/s')
+axs[1, 1].legend()
+axs[1, 1].set_xlabel('time [s]')
+#axs[1, 1].set_ylim(-5,10)
+
+axs[2, 0].plot(t[1:], v_rir_plot[4], 'k', label='50 p/s')
+axs[2, 0].legend()
+axs[2, 0].set_xlabel('time [s]')
+axs[2, 1].plot(t[1:], g_rir[1:], 'k', label='GWN')
+axs[2, 1].legend()
+axs[2, 1].set_xlabel('time [s]')
 plt.show()

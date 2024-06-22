@@ -1,0 +1,191 @@
+name: Subjective test
+welcome:
+  description: |-
+    #### Hola, gracias por participar!
+
+    A continuación se encuentra una prueba subjetiva en la que tendrás que discriminar entre dos fragmentos de audio.
+    Durante el test se presentan dos estímulos (A y B), tu trabajo es señalar cuál de estos dos corresponde con el estímulo X. En algunas ocasiones, las diferencias entre A y B serán casi imperceptibles, por lo cual te recomiendo usar auriculares y de ser posible ubicarte en un lugar con bajo ruido ambiente.
+    El test es completamente anónimo, solo te pido algunos datos básicos para el análisis de los resultados.
+  form:
+    - name: Edad
+      inputType: number
+    - name: Perfil
+      inputType: select
+      options:
+        - Soy músico/productor
+        - Tengo un hobby relacionado con la música
+        - Ninguno de los anteriores
+    - name: Medio de escucha
+      inputType: select
+      options:
+        - Auriculares in-ear
+        - Auriculares de vincha
+        - Altoparlantes (pc, celular, etc.)
+results:
+  description: |-
+    ### Resultados
+
+    Gracias por participar! Ya podés cerrar esta ventana. Abajo están los resultados de tu test.
+options:
+  - name: Vocal (GWN)
+    audioUrl: https://www.dropbox.com/scl/fi/z5wfflus5gk80lnj0c6g8/gwn_vocal.wav?rlkey=3mklsqvhwd5mjd9vi4j9rsug7&st=z3crsck2&dl=0
+    tag: Vocal (GWN)
+  - name: Vocal (VN-10)
+    audioUrl: https://www.dropbox.com/scl/fi/9464e5g0l5x81sjch60dn/ovn10_vocal.wav?rlkey=b4pwz4f643dmd55sf9q5wfive&st=uf6ywqv1&dl=0
+    tag: Vocal (VN-10)
+  - name: Vocal (VN-20)
+    audioUrl: https://www.dropbox.com/scl/fi/18jmhd2byhpjsyyje3cpx/ovn20_vocal.wav?rlkey=2tbp8u65dzfo5jtw1b8kecl8c&st=vl95cyf8&dl=0
+    tag: Vocal (VN-20)
+  - name: Vocal (VN-30)
+    audioUrl: https://www.dropbox.com/scl/fi/ac5s5cfbt41truwgwn3cf/ovn30_vocal.wav?rlkey=zj6kgy16n9pqxih9f6pdefu7s&st=llmddano&dl=0
+    tag: Vocal (VN-30)
+  - name: Vocal (VN-40)
+    audioUrl: https://www.dropbox.com/scl/fi/iio7cnacl97pac7i0wkjs/ovn40_vocal.wav?rlkey=w8q7t9z6wa3xfgt486kkt8j8y&st=2775m5tz&dl=0
+    tag: Vocal (VN-40)
+  - name: Vocal (VN-50)
+    audioUrl: https://www.dropbox.com/scl/fi/f28cnq5onauj1nm5fs201/ovn50_vocal.wav?rlkey=3wv8563bb7zjlcl0tqgs80jmg&st=6txicm54&dl=0
+    tag: Vocal (VN-50)
+  - name: Vocal (VN-60)
+    audioUrl: https://www.dropbox.com/scl/fi/hxcasau0ajn43dzoddrtn/ovn60_vocal.wav?rlkey=18q2wrzsoigq0amazn0um6o9t&st=jczpdfii&dl=0
+    tag: Vocal (VN-60)
+  - name: Vocal (VN-70)
+    audioUrl: https://www.dropbox.com/scl/fi/wk8mw3jjat5f7ygqyxsin/ovn70_vocal.wav?rlkey=asrlepr3zuvqo9g3k2x9z0w5j&st=g4wuxus6&dl=0
+    tag: Vocal (VN-70)
+
+  - name: Drum (GWN)
+    audioUrl: https://www.dropbox.com/scl/fi/c2rz5tfqp07mvualn4t7d/gwn_drum.wav?rlkey=9i0yzyl33zwr1wkokls5ny116&st=v993tuud&dl=0
+    tag: Drum (GWN)
+  - name: Drum (VN-20)
+    audioUrl: https://www.dropbox.com/scl/fi/wc9lhwfydx7vq3kejcen5/ovn20_drum.wav?rlkey=64pnd2oco6c3spoq6fd6h9ta2&st=zsv0887c&dl=0
+    tag: Drum (VN-20)
+  - name: Drum (VN-50)
+    audioUrl: https://www.dropbox.com/scl/fi/dehhb3xud3olmkeurg5ea/ovn50_drum.wav?rlkey=zlyt2z4aodgii1ijojwsjqe7p&st=ek3x70oe&dl=0
+    tag: Drum (VN-50)
+  - name: Drum (VN-100)
+    audioUrl: https://www.dropbox.com/scl/fi/yo3146jjghx0ocjt5a082/ovn100_drum.wav?rlkey=sisbq61y6nyqbtqf33zna85ck&st=bqcap1l2&dl=0
+    tag: Drum (VN-100)
+  - name: Drum (VN-150)
+    audioUrl: https://www.dropbox.com/scl/fi/gw1ptd340aeecwdlh0tbd/ovn150_drum.wav?rlkey=x9o61jjtkkw12vkacawtgdh1x&st=56pefvpj&dl=0
+    tag: Drum (VN-150)
+  - name: Drum (VN-200)
+    audioUrl: https://www.dropbox.com/scl/fi/ybultwlcwyxxjg0vqiyue/ovn200_drum.wav?rlkey=unhl6ea8fb3kv2zegpxqvjmbt&st=adkuf0j1&dl=0
+    tag: Drum (VN-200)
+  - name: Drum (VN-250)
+    audioUrl: https://www.dropbox.com/scl/fi/fq5vjrnepi2ea3xbb1hyd/ovn250_drum.wav?rlkey=ywql9lihp74364x3g10rw6v4h&st=bcyglhsc&dl=0
+    tag: Drum (VN-250)
+  - name: Drum (VN-300)
+    audioUrl: https://www.dropbox.com/scl/fi/c568ns0edm23wicnfe5sm/ovn300_drum.wav?rlkey=5z0d2uxagw6x2who5pzzgn1oq&st=7qk1mxnv&dl=0
+    tag: Drum (VN-300)
+  - name: Drum (VN-350)
+    audioUrl: https://www.dropbox.com/scl/fi/uehk4znhdufj3kysfhc3c/ovn350_drum.wav?rlkey=1yhjtoadt7vzurgayedn0w6w9&st=fl308611&dl=0
+    tag: Drum (VN-350)
+
+tests:
+  - testType: ABX
+    name: Introducción (1/1)
+    description: Al clickear A o B, podés escuchar dos versiones de una misma batería. Esta es una etapa de entrenamiento, por lo cual las diferencias entre A y B son bastante notorias. Al clickear X, vas a escuchar un audio y tenés que determinar si es más parecido al estímulo A o al estímulo B. En las siguientes pruebas las diferencias van a ser más sutiles. 
+    options:
+      - Drum (GWN)
+      - Drum (VN-20)
+    repeat: 1
+
+  - testType: ABX
+    name: 'Test #1 (1/7)'
+    description: X es igual a A o B? Recordá que no hay respuestas correctas o incorrectas, lo que buscamos es tu percepción subjetiva. Intentá escuchar cada audio no mas de 3 veces y si no notás diferencias elegí alguno al azar.
+    options:
+      - Vocal (GWN)
+      - Vocal (VN-10)
+    repeat: 1
+  - testType: ABX
+    name: 'Test #1 (2/7)'
+    description: X es igual a A o B? Intentá escuchar cada audio no mas de 3 veces. Si no notás diferencia elegí alguno al azar.
+    options:
+      - Vocal (GWN)
+      - Vocal (VN-60)
+    repeat: 1
+  - testType: ABX
+    name: 'Test #1 (3/7)'
+    description: X es igual a A o B? Intentá escuchar cada audio no mas de 3 veces. Si no notás diferencia elegí alguno al azar.
+    options:
+      - Vocal (GWN)
+      - Vocal (VN-70)
+    repeat: 1
+  - testType: ABX
+    name: 'Test #1 (4/7)'
+    description: X es igual a A o B? Intentá escuchar cada audio no mas de 3 veces. Si no notás diferencia elegí alguno al azar.
+    options:
+      - Vocal (GWN)
+      - Vocal (VN-20)
+    repeat: 1
+  - testType: ABX
+    name: 'Test #1 (5/7)'
+    description: X es igual a A o B? Intentá escuchar cada audio no mas de 3 veces. Si no notás diferencia elegí alguno al azar.
+    options:
+      - Vocal (GWN)
+      - Vocal (VN-50)
+    repeat: 1
+  - testType: ABX
+    name: 'Test #1 (6/7)'
+    description: X es igual a A o B? Intentá escuchar cada audio no mas de 3 veces. Si no notás diferencia elegí alguno al azar.
+    options:
+      - Vocal (GWN)
+      - Vocal (VN-40)
+    repeat: 1
+  - testType: ABX
+    name: 'Test #1 (7/7)'
+    description: X es igual a A o B? Intentá escuchar cada audio no mas de 3 veces. Si no notás diferencia elegí alguno al azar.
+    options:
+      - Vocal (GWN)
+      - Vocal (VN-30)
+    repeat: 1
+
+  - testType: ABX
+    name: 'Test #2 (1/7)'
+    description: Ya estás a mitad de camino! Solo quedan 7 comparaciones más.
+    options:
+      - Drum (GWN)
+      - Drum (VN-50)
+    repeat: 1
+  - testType: ABX
+    name: 'Test #2 (2/7)'
+    description: X es igual a A o B? Intentá escuchar cada audio no mas de 3 veces. Si no notás diferencia elegí alguno al azar.
+    options:
+      - Drum (GWN)
+      - Drum (VN-150)
+    repeat: 1
+  - testType: ABX
+    name: 'Test #2 (3/7)'
+    description: X es igual a A o B? Intentá escuchar cada audio no mas de 3 veces. Si no notás diferencia elegí alguno al azar.
+    options:
+      - Drum (GWN)
+      - Drum (VN-350)
+    repeat: 1
+  - testType: ABX
+    name: 'Test #2 (4/7)'
+    description: X es igual a A o B? Intentá escuchar cada audio no mas de 3 veces. Si no notás diferencia elegí alguno al azar.
+    options:
+      - Drum (GWN)
+      - Drum (VN-250)
+    repeat: 1
+  - testType: ABX
+    name: 'Test #2 (5/7)'
+    description: X es igual a A o B? Intentá escuchar cada audio no mas de 3 veces. Si no notás diferencia elegí alguno al azar.
+    options:
+      - Drum (GWN)
+      - Drum (VN-200)
+    repeat: 1
+  - testType: ABX
+    name: 'Test #2 (6/7)'
+    description: X es igual a A o B? Intentá escuchar cada audio no mas de 3 veces. Si no notás diferencia elegí alguno al azar.
+    options:
+      - Drum (GWN)
+      - Drum (VN-300)
+    repeat: 1
+  - testType: ABX
+    name: 'Test #2 (7/7)'
+    description: X es igual a A o B? Intentá escuchar cada audio no mas de 3 veces. Si no notás diferencia elegí alguno al azar.
+    options:
+      - Drum (GWN)
+      - Drum (VN-100)
+    repeat: 1
+email: juan.almaraz097@gmail.com
